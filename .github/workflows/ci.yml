@@ -36,16 +36,22 @@ jobs:
       #      TRIVY SCANS
       # ===========================
 
-      - name: Trivy filesystem scan
+      - name: Trivy filesystem scan (fail on HIGH,CRITICAL)
         uses: aquasecurity/trivy-action@0.21.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
 
-      - name: Trivy Docker image scan
+
+      - name: Trivy Docker image scan (fail on HIGH,CRITICAL)
         uses: aquasecurity/trivy-action@0.21.0
         with:
           scan-type: 'image'
           image-ref: 'secure-model:ci'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
           format: 'table'
+
 

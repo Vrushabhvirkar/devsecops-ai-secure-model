@@ -7,13 +7,14 @@ on:
 jobs:
   build-test-scan:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install deps
         run: |
@@ -28,7 +29,23 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: pytest -q
 
-
       - name: Build Docker image
         run: docker build -t secure-model:ci .
+
+      # ===========================
+      #      TRIVY SCANS
+      # ===========================
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.21.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+
+      - name: Trivy Docker image scan
+        uses: aquasecurity/trivy-action@0.21.0
+        with:
+          scan-type: 'image'
+          image-ref: 'secure-model:ci'
+          format: 'table'
 

@@ -24,7 +24,10 @@ jobs:
         run: bandit -r app -ll || true
 
       - name: Unit tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: pytest -q
+
 
       - name: Build Docker image
         run: docker build -t secure-model:ci .

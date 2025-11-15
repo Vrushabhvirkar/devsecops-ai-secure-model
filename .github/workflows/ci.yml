@@ -41,6 +41,7 @@ jobs:
         with:
           scan-type: 'fs'
           scan-ref: '.'
+          severity: 'HIGH,CRITICAL'
           exit-code: '1'
           severity: 'HIGH,CRITICAL'
 
@@ -52,6 +53,7 @@ jobs:
           image-ref: 'secure-model:ci'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
+          vuln-type: 'library'
           format: 'table'
 
 

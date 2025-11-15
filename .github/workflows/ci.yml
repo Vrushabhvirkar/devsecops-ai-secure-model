@@ -55,7 +55,7 @@ jobs:
       - name: Generate SBOM (CycloneDX)
         run: |
           pip install cyclonedx-bom
-          cyclonedx-py -o sbom.json
+          cyclonedx-py requirements -i requirements.txt -o sbom.json
 
       # =============================
       #        DOCKER BUILD

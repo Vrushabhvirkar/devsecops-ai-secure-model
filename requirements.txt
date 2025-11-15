@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+pydantic
+numpy
+python-multipart
+slowapi
+adversarial-robustness-toolbox
+joblib
+pytest
+httpx
+bandit
+safety
+

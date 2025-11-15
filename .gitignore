@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.env
+*.env
+model/
+dist/
+build/
+*.egg-info/
+*.pt
+*.pkl
+*.log
+/.venv/
+/.env/
+/pytest_cache/
+/.trivy/
+/.trivyignore.yaml
+

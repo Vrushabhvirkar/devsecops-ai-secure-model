@@ -1,5 +1,3 @@
-name: ci
-
 on:
   push:
   pull_request:
@@ -36,24 +34,22 @@ jobs:
       #      TRIVY SCANS
       # ===========================
 
-      - name: Trivy filesystem scan (fail on HIGH,CRITICAL)
+      - name: Trivy filesystem scan (fail on HIGH,CRITICAL libs only)
         uses: aquasecurity/trivy-action@0.21.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
           severity: 'HIGH,CRITICAL'
+          vuln-type: 'library'
           exit-code: '1'
-          severity: 'HIGH,CRITICAL'
 
-
-      - name: Trivy Docker image scan (fail on HIGH,CRITICAL)
+      - name: Trivy Docker image scan (fail on HIGH,CRITICAL libs only)
         uses: aquasecurity/trivy-action@0.21.0
         with:
           scan-type: 'image'
           image-ref: 'secure-model:ci'
           severity: 'HIGH,CRITICAL'
-          exit-code: '1'
           vuln-type: 'library'
+          exit-code: '1'
           format: 'table'
-
 

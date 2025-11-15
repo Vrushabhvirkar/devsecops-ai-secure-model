@@ -1,3 +1,5 @@
+name: ci
+
 on:
   push:
   pull_request:
@@ -19,22 +21,52 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Lint/SAST (bandit)
+      # =============================
+      #  SECRET SCANNING (GITLEAKS)
+      # =============================
+      - name: Gitleaks Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --source=. --no-banner --redact
+      - name: Save Gitleaks Output
+        run: |
+          gitleaks detect --source=. --no-banner --redact > gitleaks.txt || true
+
+      # =============================
+      #         SAST (BANDIT)
+      # =============================
+      - name: Bandit security scan
         run: bandit -r app -ll || true
 
+      - name: Save Bandit Output
+        run: bandit -r app -ll > bandit_output.txt || true
+
+      # =============================
+      #          UNIT TESTS
+      # =============================
       - name: Unit tests
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: pytest -q
 
+      # =============================
+      #      SBOM GENERATION
+      # =============================
+      - name: Generate SBOM (CycloneDX)
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-py -o sbom.json
+
+      # =============================
+      #        DOCKER BUILD
+      # =============================
       - name: Build Docker image
         run: docker build -t secure-model:ci .
 
-      # ===========================
-      #      TRIVY SCANS
-      # ===========================
-
-      - name: Trivy filesystem scan (fail on HIGH,CRITICAL libs only)
+      # =============================
+      #       TRIVY FS SCAN
+      # =============================
+      - name: Trivy filesystem scan (fail on HIGH/CRITICAL libs only)
         uses: aquasecurity/trivy-action@0.21.0
         with:
           scan-type: 'fs'
@@ -43,7 +75,13 @@ jobs:
           vuln-type: 'library'
           exit-code: '1'
 
-      - name: Trivy Docker image scan (fail on HIGH,CRITICAL libs only)
+      - name: Save Trivy FS Output
+        run: trivy fs . > trivy_fs.txt || true
+
+      # =============================
+      #     TRIVY IMAGE SCAN
+      # =============================
+      - name: Trivy Docker image scan (fail on HIGH/CRITICAL libs only)
         uses: aquasecurity/trivy-action@0.21.0
         with:
           scan-type: 'image'
@@ -52,4 +90,22 @@ jobs:
           vuln-type: 'library'
           exit-code: '1'
           format: 'table'
+
+      - name: Save Trivy Image Output
+        run: trivy image secure-model:ci > trivy_img.txt || true
+
+      # =============================
+      #  GENERATE SECURITY REPORT PDF
+      # =============================
+      - name: Install ReportLab
+        run: pip install reportlab
+
+      - name: Generate Security Report PDF
+        run: python scripts/generate_security_pdf.py
+
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: Security-Report.pdf
 
